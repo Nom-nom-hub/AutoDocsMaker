@@ -12,13 +12,13 @@ Base class for all language parsers
 
 **Classes:**
 
-*   `BaseParser`
+*   `BaseParser`: Base class for all language parsers
 
 **Methods:**
 
 *   `BaseParser.__init__(config)`
-*   `BaseParser.parse(file_path)`
-*   `BaseParser.extract_docstring(text)`
+*   `BaseParser.parse(file_path)`: Parse a file and extract documentation
+*   `BaseParser.extract_docstring(text)`: Extract docstring from text
 
 ## Detailed Documentation
 
@@ -28,32 +28,32 @@ Base class for all language parsers.
 
 #### `__init__(config)`
 
-*   **Description:** The constructor for the `BaseParser` class.
+Initializes a new instance of the `BaseParser` class.
+
 *   **Parameters:**
-    *   `config`: Configuration object (type unspecified).
-*   **Returns:** None
+    *   `config`: Configuration object.
 
 #### `parse(file_path)`
 
-*   **Description:** Parse a file and extract documentation. This method is intended to be overridden by subclasses.
+Parse a file and extract documentation.
+
 *   **Parameters:**
-    *   `file_path` (str): Path to the file to parse.
+    *   `file_path`: Path to the file to parse.
 *   **Returns:**
-    *   dict: Parsed documentation data. The specific structure of the returned dictionary depends on the implementation in subclasses.
-*   **Raises:**
-    *   `NotImplementedError`:  This method raises this error if it is not overridden by a subclass.
+    *   `dict`: Parsed documentation data.
 
 #### `extract_docstring(text)`
 
-*   **Description:** Extract docstring from text. This method provides a basic implementation for extracting docstrings.  Subclasses may override this method to handle different docstring formats or extraction logic.
+Extract docstring from text.
+
 *   **Parameters:**
-    *   `text` (str): The text to extract the docstring from.
+    *   `text`: The text to extract the docstring from.
 *   **Returns:**
-    *   str: The extracted docstring, or an empty string if no docstring is found.
+    *   `str`: The extracted docstring, or `None` if no docstring is found.
 
 ## Usage Examples
 
-The `BaseParser` class is designed to be a base class, so direct instantiation and usage are not typical.  Subclasses would inherit from `BaseParser` and override the `parse` method to implement language-specific parsing logic.  Here's a conceptual example of how a subclass might be used:
+The `BaseParser` class is designed to be subclassed. Here's a conceptual example of how a subclass might use the `parse` method:
 
 ```python
 from autodocs.parsers.base_parser import BaseParser
@@ -63,15 +63,11 @@ class PythonParser(BaseParser):
         super().__init__(config)
 
     def parse(self, file_path):
-        # Implement Python-specific parsing logic here
-        # Example: read the file, use ast module to parse, etc.
+        # Custom parsing logic for Python files
         with open(file_path, 'r') as f:
             code = f.read()
-        # ... (parse the code and extract documentation) ...
-        return {"file_path": file_path, "documentation": "Parsed Python documentation"}
-
-# Example usage (assuming a PythonParser instance is created):
-# parser = PythonParser(config) # config is a placeholder
-# parsed_data = parser.parse("my_python_file.py")
-# print(parsed_data)
+        # ... (Implementation details to extract documentation)
+        return {"file_path": file_path, "docstrings": []} # Example return
 ```
+
+In this example, `PythonParser` inherits from `BaseParser` and overrides the `parse` method to handle Python-specific parsing. The `extract_docstring` method from the base class could be used within the `parse` method to extract docstrings from the Python code.

@@ -24,11 +24,11 @@ This module provides the entry point for the AutoDocs tool when used from the co
 
 **Purpose:**
 
-The main function, serving as the entry point for the AutoDocs command-line tool. It parses command-line arguments, loads configuration, and initiates the documentation generation process.
+The main entry point for the AutoDocs command-line tool. Parses command-line arguments, loads configuration, and initiates the documentation generation process.
 
 **Parameters:**
 
-*   `args`: (Optional) A list of strings representing the command-line arguments. If `None`, arguments are parsed from `sys.argv`.
+*   `args`:  (Optional) A list of strings representing the command-line arguments. If `None`, arguments are parsed from `sys.argv`.
 
 **Returns:**
 
@@ -36,20 +36,20 @@ None.
 
 **Usage:**
 
-This function is called when the `autodocs` command is executed from the command line.
+This function is intended to be executed directly from the command line.  It is not designed to be called from within another Python script.
 
 ### `process_files(input_path, output_path, format_type, config)`
 
 **Purpose:**
 
-Processes files within the specified input path, generating documentation based on the configured format and settings, and saves the generated documentation to the output path.
+Processes files within the `input_path`, generating documentation and writing the output to `output_path` in the specified `format_type`. Uses the provided `config` for customization.
 
 **Parameters:**
 
 *   `input_path`: The path to the directory containing the source files to be documented.
-*   `output_path`: The path to the directory where the generated documentation will be saved.
+*   `output_path`: The path to the directory where the generated documentation will be written.
 *   `format_type`: The desired output format (e.g., "markdown", "html").
-*   `config`: A configuration object or dictionary containing settings for the documentation generation process.
+*   `config`: A configuration object or dictionary that influences the documentation generation process.  Details of the config are not specified in the provided code.
 
 **Returns:**
 
@@ -57,18 +57,22 @@ None.
 
 **Usage:**
 
-Called by `main()` to perform the core documentation generation logic.
+```python
+# Example (Conceptual - actual config details not provided)
+config = {"exclude_patterns": ["*.test.py"]}
+process_files("./src", "./docs", "markdown", config)
+```
 
 ### `should_process_file(file_path, config)`
 
 **Purpose:**
 
-Determines whether a given file should be processed for documentation generation based on the provided configuration. This function likely implements filtering logic to exclude certain files or directories.
+Determines whether a given file should be processed for documentation generation, based on the provided configuration.
 
 **Parameters:**
 
-*   `file_path`: The path to the file to be evaluated.
-*   `config`: A configuration object or dictionary containing settings for filtering files.
+*   `file_path`: The path to the file to evaluate.
+*   `config`: A configuration object or dictionary containing rules for file inclusion/exclusion. Details of the config are not specified in the provided code.
 
 **Returns:**
 
@@ -76,24 +80,10 @@ Determines whether a given file should be processed for documentation generation
 
 **Usage:**
 
-Called by `process_files()` to decide which files to include in the documentation process.
-
-## Usage Examples
-
-The following examples illustrate how the `autodocs` command might be used.  These are inferred from the module docstring.
-
-**Example 1: Basic usage with Markdown format**
-
-```bash
-autodocs --input ./src --output ./docs --format markdown
+```python
+# Example (Conceptual - actual config details not provided)
+config = {"exclude_patterns": ["__init__.py", "tests/"]}
+if should_process_file("my_module.py", config):
+    # Process the file
+    pass
 ```
-
-This command processes files in the `./src` directory, generates documentation in Markdown format, and saves the output to the `./docs` directory.
-
-**Example 2: Using short options and HTML format**
-
-```bash
-autodocs -i ./src -o ./docs -f html
-```
-
-This command is equivalent to the first example, but uses short options for input, output, and format, and specifies HTML as the output format.

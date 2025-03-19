@@ -2,104 +2,93 @@
 
 ## File Path
 
-./autodocs/generators/._ai_generator.py
+`./autodocs/generators/._ai_generator.py`
 
 ## Overview
 
-This module provides a base class and related utilities for generating documentation using AI. It defines an abstract base class `AIGenerator` that outlines the structure for AI-powered documentation generators. It also includes a helper function for managing the OpenAI API key.
+This module provides a base class for AI-powered documentation generators. It defines the core structure and methods for interacting with an AI model to generate documentation content. Subclasses can implement specific logic for different documentation formats or AI models.
 
 ## Quick Reference
 
-**Classes:**
-
-*   `AIGenerator`: Abstract base class for AI-powered documentation generators.
-
-**Functions:**
-
-*   `get_openai_api_key()`: Retrieves the OpenAI API key from the environment.
+*   `BaseAIGenerator`: Base class for AI-powered documentation generators.
+    *   `__init__(self, model_name: str, api_key: str)`: Initializes the generator with the AI model name and API key.
+    *   `generate_text(self, prompt: str) -> str`: Abstract method to generate text based on a given prompt.
+    *   `generate_documentation(self, code: str, docstring: str = "") -> str`: Generates documentation for a given code snippet.
 
 ## Detailed Documentation
 
-### `AIGenerator` Class
+### `BaseAIGenerator`
 
-**Purpose:**
+Base class for AI-powered documentation generators.
 
-An abstract base class for AI-powered documentation generators. Subclasses should implement the `generate_documentation` method to provide specific documentation generation logic.
+#### `__init__(self, model_name: str, api_key: str)`
 
-**Attributes:**
+Initializes the generator with the AI model name and API key.
 
-*   `model_name` (str): The name of the AI model to use (e.g., "gpt-3.5-turbo").
+*   **Parameters:**
+    *   `model_name` (str): The name of the AI model to use (e.g., "gpt-3.5-turbo").
+    *   `api_key` (str): The API key for accessing the AI model.
 
-**Methods:**
+#### `generate_text(self, prompt: str) -> str`
 
-*   `__init__(self, model_name: str = "gpt-3.5-turbo")`: Initializes the AIGenerator with the specified model name.
-    *   `model_name`: The name of the AI model to use. Defaults to "gpt-3.5-turbo".
-*   `generate_documentation(self, code: str) -> str`: Abstract method to generate documentation for the given code.  Must be implemented by subclasses.
-    *   `code`: The code to generate documentation for.
-    *   Returns: The generated documentation as a string.
-*   `_query_ai(self, prompt: str) -> str`: Protected method to query the AI model with a given prompt.  This method is intended to be used internally by subclasses.
-    *   `prompt`: The prompt to send to the AI model.
-    *   Returns: The AI's response as a string.
+Abstract method to generate text based on a given prompt.  This method *must* be implemented by subclasses.
 
-### `get_openai_api_key()` Function
+*   **Parameters:**
+    *   `prompt` (str): The prompt to send to the AI model.
+*   **Returns:**
+    *   str: The generated text from the AI model.
+*   **Raises:**
+    *   `NotImplementedError`: If the method is not implemented by a subclass.
 
-**Purpose:**
+#### `generate_documentation(self, code: str, docstring: str = "") -> str`
 
-Retrieves the OpenAI API key from the environment variable `OPENAI_API_KEY`.
+Generates documentation for a given code snippet. This method constructs a prompt using the provided code and optional existing docstring, then calls `generate_text` to get the AI-generated documentation.
 
-**Usage:**
-
-```python
-from ._ai_generator import get_openai_api_key
-
-api_key = get_openai_api_key()
-if api_key:
-    print("OpenAI API key found.")
-else:
-    print("OpenAI API key not found.  Please set the OPENAI_API_KEY environment variable.")
-```
-
-**Returns:**
-
-*   `str`: The OpenAI API key if found, otherwise `None`.
+*   **Parameters:**
+    *   `code` (str): The code snippet to generate documentation for.
+    *   `docstring` (str, optional): An existing docstring to include in the prompt. Defaults to "".
+*   **Returns:**
+    *   str: The generated documentation from the AI model.
 
 ## Usage Examples
 
-The `AIGenerator` class is an abstract base class, so it cannot be instantiated directly.  Here's an example of how a subclass might be implemented and used:
-
 ```python
-import os
-from ._ai_generator import AIGenerator, get_openai_api_key
+# Assuming a subclass of BaseAIGenerator is defined (e.g., OpenAIGenerator)
+# and that the necessary API key is set up.
 
-class MyDocumentationGenerator(AIGenerator):
-    def __init__(self, model_name: str = "gpt-3.5-turbo"):
-        super().__init__(model_name)
+# Example 1: Generating documentation for a simple function
+from autodocs.generators._ai_generator import BaseAIGenerator
 
-    def generate_documentation(self, code: str) -> str:
-        prompt = f"Generate documentation for the following Python code:\n{code}"
-        return self._query_ai(prompt)
+class MockAIGenerator(BaseAIGenerator):
+    def __init__(self, model_name: str, api_key: str):
+        super().__init__(model_name, api_key)
 
-    def _query_ai(self, prompt: str) -> str:
-        api_key = get_openai_api_key()
-        if not api_key:
-            return "Error: OpenAI API key not found."
+    def generate_text(self, prompt: str) -> str:
+        # Simulate AI response for testing
+        if "def add" in prompt:
+            return "This function adds two numbers."
+        return "Generated documentation."
 
-        # In a real implementation, you would use the OpenAI API here
-        # For this example, we'll just return a placeholder.
-        return f"Documentation generated by {self.model_name} for:\n{code}"
+# Create an instance of the generator
+generator = MockAIGenerator(model_name="mock_model", api_key="mock_api_key")
 
-
-# Example usage:
-if __name__ == '__main__':
-    # Set the OPENAI_API_KEY environment variable (replace with your actual key)
-    os.environ["OPENAI_API_KEY"] = "YOUR_OPENAI_API_KEY"
-
-    generator = MyDocumentationGenerator()
-    code_snippet = """
-def add(x, y):
+# Code snippet
+code_snippet = """
+def add(a, b):
     \"\"\"Adds two numbers.\"\"\"
-    return x + y
+    return a + b
 """
-    documentation = generator.generate_documentation(code_snippet)
-    print(documentation)
+
+# Generate documentation
+generated_doc = generator.generate_documentation(code_snippet)
+print(generated_doc)
+
+# Example 2: Using an existing docstring
+existing_docstring = "This function calculates the sum of a list of numbers."
+code_snippet_2 = """
+def sum_list(numbers):
+    return sum(numbers)
+"""
+generated_doc_2 = generator.generate_documentation(code_snippet_2, existing_docstring)
+print(generated_doc_2)
 ```

@@ -1,4 +1,4 @@
-# autodocs.generators
+# __init__
 
 ## File Path
 
@@ -6,7 +6,7 @@
 
 ## Overview
 
-This module provides a function to generate documentation in various formats.
+This module provides the entry point for generating documentation in various formats. It takes parsed data, an output path, a desired format, and a configuration dictionary as input to produce the documentation.
 
 ## Quick Reference
 
@@ -18,46 +18,35 @@ This module provides a function to generate documentation in various formats.
 
 ### `generate_documentation(parsed_data, output_path, format_type, config)`
 
-**Purpose:** Generate documentation in the specified format.
+**Purpose:**
+
+Generates documentation in the specified format.
 
 **Arguments:**
 
-*   `parsed_data` (dict): Dictionary of parsed file data. This likely contains information extracted from the source code, such as function signatures, docstrings, and class definitions.
-*   `output_path` (str): Directory to write output files. The generated documentation files will be saved here.
-*   `format_type` (str): Type of documentation to generate. Supported formats include:
-    *   `markdown`
-    *   `html`
-    *   `pdf`
-    *   `ai` (likely refers to a format for artificial intelligence or a specific AI-related tool)
-*   `config` (dict): Configuration dictionary. This allows for customization of the documentation generation process. The contents of this dictionary are not specified in the provided information, but it likely contains settings such as styling options, file naming conventions, or specific options for each format type.
+*   `parsed_data` (dict): A dictionary containing the parsed data from the source files. The structure of this dictionary is not defined in this module, but it is assumed to contain information necessary for documentation generation.
+*   `output_path` (str): The directory where the generated documentation files will be written.
+*   `format_type` (str): The desired format for the documentation. Supported formats include "markdown", "html", "pdf", and "ai".  The specific implementation for each format is likely handled by other modules or functions.
+*   `config` (dict): A configuration dictionary that may contain settings relevant to the documentation generation process. This could include options specific to the chosen `format_type`.
 
-**Return Value:**
+**Returns:**
 
-This function likely does not return a value (returns `None`). The primary function is to write files to the `output_path`.
+This function likely does not return a value (returns `None`). It's primary function is to write files to the `output_path`.
 
-**Usage Examples:**
+## Usage Examples
 
-While a specific usage example cannot be provided without knowing the structure of `parsed_data` and the contents of `config`, a general example is shown below. This example assumes that you have already parsed your code into the `parsed_data` dictionary.
+While the exact usage depends on the structure of `parsed_data` and the contents of `config`, here's a general example:
 
 ```python
 from autodocs.generators import generate_documentation
 
-# Assume 'parsed_data' is populated with data from your code
-parsed_data = {
-    "module_name": "my_module",
-    "functions": [
-        {
-            "name": "my_function",
-            "docstring": "This function does something.",
-            "args": ["arg1", "arg2"],
-        }
-    ],
-}
+# Assume you have parsed data and a configuration
+parsed_data = {"module_name": "my_module", "functions": [{"name": "my_function", "docstring": "Does something"}]}
 output_directory = "./docs"
 format_to_generate = "markdown"
-configuration = {"stylesheet": "custom.css"} # Example configuration
+configuration = {"markdown": {"include_source": True}} # Example config
 
 generate_documentation(parsed_data, output_directory, format_to_generate, configuration)
 ```
 
-This example would generate markdown documentation in the `./docs` directory, potentially using a custom stylesheet. The exact output would depend on the implementation details of the `generate_documentation` function.
+This example demonstrates how to call `generate_documentation` with example data, an output directory, a format, and a configuration. The actual content of the generated documentation will depend on the `parsed_data` and the implementation of the format-specific generation logic.

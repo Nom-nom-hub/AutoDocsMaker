@@ -6,105 +6,59 @@
 
 ## Overview
 
-This module provides a generator for creating Markdown documentation from Python code. It parses docstrings and code structure to produce formatted Markdown output suitable for documentation websites or README files.
+This module provides functionality to generate Markdown documentation from Python code, specifically designed for documenting other modules. It leverages introspection to extract information about classes, functions, and their docstrings, and then formats this information into Markdown.
 
 ## Quick Reference
 
-*   `MarkdownGenerator` class: Generates Markdown documentation from a Python module or file.
-    *   `__init__(self, module_path: str, output_path: str | None = None)`: Initializes the MarkdownGenerator.
-    *   `generate_markdown(self) -> str`: Generates the Markdown documentation string.
-    *   `_extract_module_docstring(self) -> str | None`: Extracts the module-level docstring.
-    *   `_extract_class_and_function_info(self) -> list`: Extracts information about classes and functions.
-    *   `_format_class_doc(self, class_info: dict) -> str`: Formats the documentation for a class.
-    *   `_format_function_doc(self, function_info: dict) -> str`: Formats the documentation for a function.
-    *   `_format_docstring(self, docstring: str | None) -> str`: Formats a docstring into Markdown.
-    *   `_write_to_file(self, markdown_content: str) -> None`: Writes the generated Markdown to a file.
+*   `MarkdownGenerator(module)`
+    *   `__init__(self, module)`
+    *   `generate_markdown(self)`
 
 ## Detailed Documentation
 
-### `MarkdownGenerator` class
+### `MarkdownGenerator(module)`
 
-Generates Markdown documentation from a Python module or file.
+This class is responsible for generating Markdown documentation for a given Python module.
 
-#### `__init__(self, module_path: str, output_path: str | None = None)`
+#### `__init__(self, module)`
 
-Initializes the MarkdownGenerator.
-
+*   **Purpose:** Initializes a `MarkdownGenerator` instance.
 *   **Parameters:**
-    *   `module_path` (str): The path to the Python module or file.
-    *   `output_path` (str, optional): The path to the output Markdown file. If None, the markdown content will not be written to a file. Defaults to None.
+    *   `module`: The Python module to document (e.g., the result of `import my_module`).
+*   **Attributes:**
+    *   `module`: Stores the input module.
 
-#### `generate_markdown(self) -> str`
+#### `generate_markdown(self)`
 
-Generates the Markdown documentation string.
-
-*   **Returns:**
-    *   str: The generated Markdown documentation.
-
-#### `_extract_module_docstring(self) -> str | None`
-
-Extracts the module-level docstring.
-
-*   **Returns:**
-    *   str | None: The module docstring, or None if not found.
-
-#### `_extract_class_and_function_info(self) -> list`
-
-Extracts information about classes and functions. This method likely uses introspection to parse the code.
-
-*   **Returns:**
-    *   list: A list of dictionaries, where each dictionary represents a class or function and contains its name, docstring, and potentially other relevant information (e.g., arguments for functions).
-
-#### `_format_class_doc(self, class_info: dict) -> str`
-
-Formats the documentation for a class into Markdown.
-
-*   **Parameters:**
-    *   `class_info` (dict): A dictionary containing information about the class (name, docstring, etc.).
-*   **Returns:**
-    *   str: The formatted Markdown documentation for the class.
-
-#### `_format_function_doc(self, function_info: dict) -> str`
-
-Formats the documentation for a function into Markdown.
-
-*   **Parameters:**
-    *   `function_info` (dict): A dictionary containing information about the function (name, docstring, arguments, etc.).
-*   **Returns:**
-    *   str: The formatted Markdown documentation for the function.
-
-#### `_format_docstring(self, docstring: str | None) -> str`
-
-Formats a docstring into Markdown. This likely handles formatting such as code blocks and lists.
-
-*   **Parameters:**
-    *   `docstring` (str | None): The docstring to format.
-*   **Returns:**
-    *   str: The formatted Markdown docstring.
-
-#### `_write_to_file(self, markdown_content: str) -> None`
-
-Writes the generated Markdown to a file.
-
-*   **Parameters:**
-    *   `markdown_content` (str): The Markdown content to write.
+*   **Purpose:** Generates the Markdown documentation string for the module. It iterates through the module's members (classes, functions, etc.), extracts their docstrings and other relevant information, and formats them into a Markdown string.
+*   **Returns:** A string containing the generated Markdown documentation.
+*   **Details:**
+    *   The method constructs the Markdown document by:
+        *   Adding a title for the module.
+        *   Iterating through the module's members.
+        *   For each member (class or function), it extracts its docstring and other attributes.
+        *   It formats the information into Markdown sections (e.g., class/function name, docstring).
+        *   It handles nested members (e.g., methods within a class).
+        *   It uses helper functions (e.g., `_format_function_docstring`, `_format_class_docstring`) to format specific elements.
 
 ## Usage Examples
 
 ```python
-# Assuming you have a Python file named 'my_module.py'
-# and the MarkdownGenerator is in the same directory or accessible via import
+# Assuming you have a module named 'my_module.py'
+# and it contains classes and functions with docstrings.
+import my_module
+from autodocs.generators._markdown_generator import MarkdownGenerator
 
-# Create a MarkdownGenerator instance
-from ._markdown_generator import MarkdownGenerator
+# Create a MarkdownGenerator instance.
+generator = MarkdownGenerator(my_module)
 
-generator = MarkdownGenerator(module_path="my_module.py", output_path="my_module_docs.md")
-
-# Generate the Markdown documentation
+# Generate the Markdown documentation.
 markdown_output = generator.generate_markdown()
 
-# Print the generated Markdown (or write it to a file)
+# Print or save the generated Markdown.
 print(markdown_output)
 
-# (Alternatively, if output_path was specified in the constructor, the file would be written)
+# Or, save it to a file:
+# with open("my_module_docs.md", "w") as f:
+#     f.write(markdown_output)
 ```

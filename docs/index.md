@@ -2,7 +2,7 @@
 
 ## Overview
 
-AutoDocs is an automatic documentation generator designed to extract documentation from code comments and structure. It supports multiple programming languages and output formats, making it easy to create and maintain up-to-date documentation for your projects.
+AutoDocs is an automatic documentation generator designed to extract documentation from code comments and code structure. It supports multiple programming languages and output formats, simplifying the process of keeping your project documentation up-to-date.
 
 ## Installation
 
@@ -22,19 +22,18 @@ autodocs --input ./src --output ./docs --format markdown
 
 This command will:
 
-*   Process the source code located in the `./src` directory.
+*   Process source files located in the `./src` directory.
 *   Generate documentation files in the `./docs` directory.
-*   Format the output as Markdown files.
+*   Format the output as Markdown.
 
 ## Configuration Information
 
-AutoDocs can be configured using command-line arguments. Here are the available options:
+AutoDocs can be configured using command-line arguments. The following options are available:
 
 *   `--input`: Specifies the input directory containing the source code. (Required)
 *   `--output`: Specifies the output directory for the generated documentation. (Required)
 *   `--format`: Specifies the output format (e.g., `markdown`). (Required)
-*   `--config`: Specifies a configuration file (e.g., `autodocs.cfg`).
-*   `--help`: Displays help information.
+*   `--config`: Specifies a configuration file (optional).
 
 ## Table of Contents
 
@@ -42,12 +41,12 @@ AutoDocs can be configured using command-line arguments. Here are the available 
 *   autodocs/
     *   [autodocs_cli.py](autodocs_cli.py.md)
     *   [autodocs_config.py](autodocs_config.py.md)
-    *   [__init__.py](autodocs___init__.py.md)
-    *   parsers/
-        *   [base_parser.py](autodocs_parsers_base_parser.py.md)
-        *   [python_parser.py](autodocs_parsers_python_parser.py.md)
-        *   [__init__.py](autodocs_parsers___init__.py.md)
-    *   generators/
-        *   [markdown_generator.py](autodocs_generators_markdown_generator.py.md)
-        *   [__init__.py](autodocs_generators___init__.py.md)
-        *   [ai_generator.py](autodocs_generators_ai_generator.py.md)
+    *   [autodocs/\_\_init\_\_.py](autodocs___init__.py.md)
+    *   autodocs/parsers/
+        *   [autodocs_parsers_base_parser.py](autodocs_parsers_base_parser.py.md)
+        *   [autodocs_parsers_python_parser.py](autodocs_parsers_python_parser.py.md)
+        *   [autodocs_parsers/\_\_init\_\_.py](autodocs_parsers___init__.py.md)
+    *   autodocs/generators/
+        *   [autodocs_generators_markdown_generator.py](autodocs_generators_markdown_generator.py.md)
+        *   [autodocs_generators/\_\_init\_\_.py](autodocs_generators___init__.py.md)
+        *   [autodocs_generators_ai_generator.py](autodocs_generators_ai_generator.py.md)

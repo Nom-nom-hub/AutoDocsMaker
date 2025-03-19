@@ -23,78 +23,82 @@ Parser for Python files
 
 ## Detailed Documentation
 
-### Class: `PythonParser`
+### `PythonParser` Class
 
-**Docstring:** Parser for Python files
+**Description:**
+
+The `PythonParser` class is responsible for parsing Python files and extracting documentation information. It utilizes the `ast` module to traverse the Abstract Syntax Tree (AST) of the Python code.
 
 **Methods:**
 
 #### `parse(file_path)`
 
-**Docstring:** Parse a Python file and extract documentation
+**Description:**
 
-**Args:**
+Parses a Python file and extracts documentation.
 
-*   `file_path` (str): Path to the Python file
+**Arguments:**
+
+*   `file_path` (str): The path to the Python file to parse.
 
 **Returns:**
 
-*   dict: Dictionary with parsed documentation data
+*   dict: A dictionary containing the parsed documentation data. The structure of this dictionary is not explicitly defined in the provided information, but it likely contains information about classes, functions, and import statements found in the file.
 
-**Example Usage:**
+#### `_parse_class(node)`
+
+**Description:**
+
+Parses a class definition within the Python file's AST.  This method is intended for internal use by the `parse` method.
+
+**Arguments:**
+
+*   `node`:  An AST node representing a class definition.
+
+**Returns:**
+
+*   The return value is not explicitly defined in the prompt. It likely returns a dictionary or other data structure containing information about the parsed class, such as its name, docstring, and potentially information about its methods and attributes.
+
+#### `_parse_function(node)`
+
+**Description:**
+
+Parses a function definition within the Python file's AST. This method is intended for internal use by the `parse` method.
+
+**Arguments:**
+
+*   `node`: An AST node representing a function definition.
+
+**Returns:**
+
+*   The return value is not explicitly defined in the prompt. It likely returns a dictionary or other data structure containing information about the parsed function, such as its name, docstring, and parameters.
+
+#### `_parse_import(node)`
+
+**Description:**
+
+Parses an import statement within the Python file's AST. This method is intended for internal use by the `parse` method.
+
+**Arguments:**
+
+*   `node`: An AST node representing an import statement.
+
+**Returns:**
+
+*   The return value is not explicitly defined in the prompt. It likely returns a dictionary or other data structure containing information about the parsed import statement, such as the imported module or objects.
+
+## Usage Examples
+
+The provided information does not include code examples. However, a typical usage pattern would involve creating an instance of `PythonParser` and calling the `parse` method with the path to a Python file:
 
 ```python
 from autodocs.parsers.python_parser import PythonParser
 
+file_path = "my_module.py"  # Replace with the actual path to your Python file
 parser = PythonParser()
-data = parser.parse("my_module.py")
-print(data)
+parsed_data = parser.parse(file_path)
+
+# Process the parsed_data dictionary to extract the desired documentation information.
+# The structure of parsed_data will depend on the implementation details of the parser.
+print(parsed_data)
 ```
-
-#### `_parse_class(node)`
-
-**Docstring:** Parse a class definition
-
-**Args:**
-
-*   `node`: Represents a class definition in the Abstract Syntax Tree (AST).
-
-**Returns:**
-
-*   dict: Dictionary containing parsed class information.
-
-**Implementation Details:**
-
-This method is intended for internal use within the `PythonParser` class. It processes a class definition node from the AST, extracting relevant information such as the class name, docstrings, and potentially details of methods and attributes within the class.
-
-#### `_parse_function(node)`
-
-**Docstring:** Parse a function definition
-
-**Args:**
-
-*   `node`: Represents a function definition in the Abstract Syntax Tree (AST).
-
-**Returns:**
-
-*   dict: Dictionary containing parsed function information.
-
-**Implementation Details:**
-
-This method is intended for internal use within the `PythonParser` class. It processes a function definition node from the AST, extracting relevant information such as the function name, docstrings, parameters, and return types.
-
-#### `_parse_import(node)`
-
-**Docstring:** Parse an import statement
-
-**Args:**
-
-*   `node`: Represents an import statement in the Abstract Syntax Tree (AST).
-
-**Returns:**
-
-*   dict: Dictionary containing parsed import information.
-
-**Implementation Details:**
-
-This method is intended for internal use within the `PythonParser` class. It processes an import statement node from the AST, extracting information about the imported modules or objects.

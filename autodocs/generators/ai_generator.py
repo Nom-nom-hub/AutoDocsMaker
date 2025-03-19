@@ -272,6 +272,17 @@ class AIGenerator:
         
         logger.info(f"Index documentation saved to {os.path.join(output_path, 'index.md')}")
         
+        # Generate README.md file
+        readme_prompt = self._create_readme_prompt(files_info, self.config.get('project', {}))
+        readme_content = self._call_ai_api(readme_prompt)
+        
+        # Save README.md to project root
+        project_root = self.config.get('project', {}).get('root_dir', os.getcwd())
+        with open(os.path.join(project_root, 'README.md'), 'w', encoding='utf-8') as f:
+            f.write(readme_content)
+        
+        logger.info(f"README.md saved to {os.path.join(project_root, 'README.md')}")
+        
         return index_content
     
     def _generate_file_doc_with_ai(self, data):
@@ -484,5 +495,35 @@ IMPORTANT: Do not wrap the entire response in triple backticks (```). Only use b
         prompt += "IMPORTANT: For the Table of Contents section, ONLY include the actual files listed in the project structure above. "
         prompt += "Organize them by directory and include links to each file using the format: [filename](path/to/file.md)\n"
         prompt += "For documentation files, link to the .md file that corresponds to the source file.\n"
+        
+        return prompt
+
+    def _create_readme_prompt(self, files_info, project_info):
+        """Create a prompt for generating README documentation"""
+        prompt = "Generate a comprehensive README.md file for a software project with the following details:\n\n"
+        
+        # Add project info
+        prompt += f"Project name: {project_info.get('name', 'AutoDocs')}\n"
+        prompt += f"Project description: {project_info.get('description', 'An automatic documentation generator')}\n"
+        prompt += f"Project usage: {project_info.get('usage', '')}\n\n"
+        
+        # Add files info
+        prompt += "The project contains the following key files:\n\n"
+        for file_info in files_info[:10]:  # Limit to first 10 files to avoid overwhelming
+            prompt += f"- {file_info['file_path']}\n"
+            if file_info.get('description'):
+                prompt += f"  Brief description: {file_info['description']}\n"
+        
+        # Add specific instructions
+        prompt += "\nPlease create a README.md file with the following sections:\n"
+        prompt += "1. Project Name and Description - A brief overview of the project\n"
+        prompt += "2. Features - Key features of the project\n"
+        prompt += "3. Installation - How to install the project\n"
+        prompt += "4. Usage - Basic usage instructions with code examples\n"
+        prompt += "5. Configuration - Available configuration options\n"
+        prompt += "6. Contributing - How to contribute to the project\n"
+        prompt += "7. License - The project's license information\n\n"
+        
+        prompt += "Make the README concise, informative, and well-formatted with proper markdown syntax. Include code blocks for installation and usage examples."
         
         return prompt

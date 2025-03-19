@@ -6,81 +6,114 @@
 
 ## Overview
 
-This module defines the base class for all parsers. It provides a common interface and handles basic functionalities like registering and retrieving parser types.
+This module defines the base class for all parsers. It provides a common interface and handles basic functionalities such as logging and error handling.  Subclasses should inherit from `BaseParser` and implement the parsing logic specific to their input formats.
 
 ## Quick Reference
 
-**Classes:**
-
-*   `BaseParser`: The base class for all parsers.
-
-**Functions:**
-
-*   `register_parser(parser_type: str, parser_class: type) -> None`: Registers a parser class with a given type.
-*   `get_parser(parser_type: str) -> type | None`: Retrieves a registered parser class by its type.
+*   `BaseParser`
+    *   `__init__(self, logger=None)`
+    *   `parse(self, data)`
+    *   `_log_error(self, message)`
+    *   `_log_warning(self, message)`
+    *   `_log_info(self, message)`
 
 ## Detailed Documentation
 
 ### `BaseParser` Class
 
-The base class for all parsers. It provides a common interface and handles basic functionalities.
+The base class for all parsers. Provides a common interface and handles basic functionalities.
 
-**Methods:**
+*   **`__init__(self, logger=None)`**
 
-*   `__init__(self, *args, **kwargs)`: Initializes the parser.  Accepts arbitrary arguments.
-*   `parse(self, data: str) -> dict`: Abstract method to parse the input data.  Must be implemented by subclasses.  Returns a dictionary containing the parsed data.
+    Initializes a new instance of the `BaseParser` class.
 
-### `register_parser(parser_type: str, parser_class: type) -> None` Function
+    *   **Parameters:**
+        *   `logger` (logging.Logger, optional):  An optional logger instance. If not provided, a default logger will be used.
 
-Registers a parser class with a given type. This allows parsers to be looked up by their type string.
+    *   **Returns:**
+        *   None
 
-**Parameters:**
+*   **`parse(self, data)`**
 
-*   `parser_type`: The string identifier for the parser (e.g., "json", "xml").
-*   `parser_class`: The parser class to register (must be a subclass of `BaseParser`).
+    Abstract method that must be implemented by subclasses. This method is responsible for parsing the input `data`.
 
-**Returns:**
+    *   **Parameters:**
+        *   `data`: The data to be parsed. The type of `data` is dependent on the specific parser implementation.
 
-*   `None`
+    *   **Returns:**
+        *   The parsed data. The format of the returned data is dependent on the specific parser implementation.
 
-### `get_parser(parser_type: str) -> type | None` Function
+    *   **Raises:**
+        *   `NotImplementedError`: If the method is not implemented by a subclass.
 
-Retrieves a registered parser class by its type.
+*   **`_log_error(self, message)`**
 
-**Parameters:**
+    Logs an error message using the configured logger.
 
-*   `parser_type`: The string identifier of the parser to retrieve.
+    *   **Parameters:**
+        *   `message` (str): The error message to log.
 
-**Returns:**
+    *   **Returns:**
+        *   None
 
-*   The parser class if found, otherwise `None`.
+*   **`_log_warning(self, message)`**
+
+    Logs a warning message using the configured logger.
+
+    *   **Parameters:**
+        *   `message` (str): The warning message to log.
+
+    *   **Returns:**
+        *   None
+
+*   **`_log_info(self, message)`**
+
+    Logs an informational message using the configured logger.
+
+    *   **Parameters:**
+        *   `message` (str): The informational message to log.
+
+    *   **Returns:**
+        *   None
 
 ## Usage Examples
 
-While specific usage examples are not directly available from the code, here's how you would typically use the functions:
-
 ```python
-from autodocs.parsers._base_parser import BaseParser, register_parser, get_parser
+import logging
+from autodocs.parsers._base_parser import BaseParser
 
-# Define a simple parser (this would typically be in a separate file)
-class MyParser(BaseParser):
-    def parse(self, data: str) -> dict:
-        return {"parsed_data": data.upper()}
+# Example of a custom parser inheriting from BaseParser
+class MyCustomParser(BaseParser):
+    def __init__(self, logger=None):
+        super().__init__(logger) # Initialize the base class
 
-# Register the parser
-register_parser("my_parser", MyParser)
+    def parse(self, data):
+        # Implement parsing logic here
+        try:
+            # Simulate parsing
+            parsed_data = data.upper()
+            self._log_info(f"Successfully parsed: {data}")
+            return parsed_data
+        except Exception as e:
+            self._log_error(f"Error parsing data: {e}")
+            return None
 
-# Retrieve the parser
-parser_class = get_parser("my_parser")
+# Example usage
+# Create a logger
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
-if parser_class:
-    # Instantiate the parser
-    parser = parser_class()
+# Create an instance of the custom parser
+parser = MyCustomParser(logger=logger)
 
-    # Parse some data
-    data = "hello world"
-    parsed_data = parser.parse(data)
-    print(parsed_data) # Output: {'parsed_data': 'HELLO WORLD'}
-else:
-    print("Parser not found")
+# Parse some data
+data_to_parse = "hello world"
+parsed_result = parser.parse(data_to_parse)
+
+if parsed_result:
+    print(f"Parsed result: {parsed_result}")
 ```
