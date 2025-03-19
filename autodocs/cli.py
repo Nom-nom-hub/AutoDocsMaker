@@ -27,29 +27,71 @@ logging.basicConfig(
 logger = logging.getLogger('autodocs')
 
 def main():
-    parser = argparse.ArgumentParser(description='AutoDocs - Automatic Documentation Generator')
-    parser.add_argument('--input', '-i', required=True, help='Input directory or file')
-    parser.add_argument('--output', '-o', required=True, help='Output directory')
-    parser.add_argument('--format', '-f', choices=['markdown', 'html', 'pdf', 'ai'], default='markdown',
-                        help='Output format (default: markdown)')
-    parser.add_argument('--config', '-c', help='Path to config file (default: autodocs.config.json)')
-    parser.add_argument('--api-key', '-k', help='OpenRouter API key for AI generation')
-    parser.add_argument('--verbose', '-v', action='store_true', help='Enable verbose output')
+    """Main entry point for the AutoDocs CLI"""
+    parser = argparse.ArgumentParser(
+        description='AutoDocs - Automatic Documentation Generator',
+        epilog='Example: autodocs --input ./src --output ./docs --format markdown'
+    )
+    
+    parser.add_argument(
+        '--input', '-i', 
+        required=True, 
+        help='Input directory or file to generate documentation for'
+    )
+    
+    parser.add_argument(
+        '--output', '-o', 
+        required=True, 
+        help='Output directory where documentation will be saved'
+    )
+    
+    parser.add_argument(
+        '--format', '-f', 
+        choices=['markdown', 'html', 'pdf', 'ai'], 
+        default='markdown',
+        help='Output format for the documentation (default: markdown)'
+    )
+    
+    parser.add_argument(
+        '--config', '-c', 
+        help='Path to config file (default: autodocs.config.json in current directory)'
+    )
+    
+    parser.add_argument(
+        '--api-key', '-k', 
+        help='OpenRouter API key for AI generation (can also be set in config or OPENROUTER_API_KEY env var)'
+    )
+    
+    parser.add_argument(
+        '--verbose', '-v', 
+        action='store_true', 
+        help='Enable verbose output for debugging'
+    )
+    
+    parser.add_argument(
+        '--version', 
+        action='version', 
+        version='AutoDocs 0.1.0',
+        help='Show the version number and exit'
+    )
     
     args = parser.parse_args()
     
     # Set logging level based on verbose flag
     if args.verbose:
         logger.setLevel(logging.DEBUG)
+        logger.debug("Verbose logging enabled")
     
     # Load configuration
     logger.info(f"Loading configuration from {args.config or 'default location'}")
     config = load_config(args.config)
     
-    # Override API key if provided
+    # Override API key if provided in command line
     if args.api_key:
         config['openrouter_api_key'] = args.api_key
         logger.info("Using API key from command line arguments")
+    elif os.environ.get('OPENROUTER_API_KEY'):
+        logger.info("Using API key from OPENROUTER_API_KEY environment variable")
     
     # Process files
     logger.info(f"Starting documentation generation for {args.input}")

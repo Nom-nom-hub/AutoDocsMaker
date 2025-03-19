@@ -3,7 +3,9 @@
     "venv/",
     "node_modules/",
     "test/",
-    "__pycache__/"
+    "__pycache__/",
+    "._*",
+    "**/._*"
   ],
   "include_private": false,
   "project": {
@@ -25,8 +27,8 @@
       "font_size": 11
     },
     "ai": {
-      "model": "google/gemini-2.0-flash-lite-preview-02-05:free"
+      "model": "anthropic/claude-3-haiku:free"
     }
   },
-  "openrouter_api_key": "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"
+  "openrouter_api_key": "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"
 }

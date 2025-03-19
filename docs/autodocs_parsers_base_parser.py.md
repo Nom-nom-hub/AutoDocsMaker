@@ -1,3 +1,4 @@
+```markdown
 # base_parser
 
 ## File Path
@@ -10,64 +11,91 @@ Base class for all language parsers
 
 ## Quick Reference
 
-**Classes:**
-
-*   `BaseParser`: Base class for all language parsers
-
-**Methods:**
-
-*   `BaseParser.__init__(config)`
-*   `BaseParser.parse(file_path)`: Parse a file and extract documentation
-*   `BaseParser.extract_docstring(text)`: Extract docstring from text
+*   **Classes:**
+    *   `BaseParser`
+*   **Functions:**
+    *   `__init__(config)`
+    *   `parse(file_path)`
+    *   `extract_docstring(text)`
 
 ## Detailed Documentation
 
-### `BaseParser` Class
+### Class: `BaseParser`
 
-Base class for all language parsers.
+Base class for all language parsers
 
-#### `__init__(config)`
+#### Methods
 
-Initializes a new instance of the `BaseParser` class.
+##### `__init__(config)`
 
-*   **Parameters:**
-    *   `config`: Configuration object.
+Constructor for the `BaseParser` class.  The `config` parameter is expected, but its type and usage are not specified in the provided code.  It likely contains configuration settings for the parser.
 
-#### `parse(file_path)`
+##### `parse(file_path)`
 
-Parse a file and extract documentation.
+Parse a file and extract documentation
 
-*   **Parameters:**
-    *   `file_path`: Path to the file to parse.
-*   **Returns:**
-    *   `dict`: Parsed documentation data.
+**Args:**
 
-#### `extract_docstring(text)`
+*   `file_path` (str): Path to the file to parse
 
-Extract docstring from text.
+**Returns:**
 
-*   **Parameters:**
-    *   `text`: The text to extract the docstring from.
-*   **Returns:**
-    *   `str`: The extracted docstring, or `None` if no docstring is found.
+*   `dict`: Parsed documentation data. The structure of this dictionary is not defined in the base class and is likely to be implemented by subclasses.
+
+##### `extract_docstring(text)`
+
+Extract docstring from text.  The implementation details are not provided, meaning this is likely an abstract method that subclasses must implement.  It's designed to take a string (`text`) and return the docstring contained within it.
+
+**Args:**
+
+* `text` (str): The input string from which to extract the docstring.
+
+**Returns:**
+
+* The docstring extracted from the input text. The return type is not explicitly specified, but it is likely a string.
 
 ## Usage Examples
 
-The `BaseParser` class is designed to be subclassed. Here's a conceptual example of how a subclass might use the `parse` method:
+While specific usage examples cannot be fully determined from the base class alone (as it's likely abstract), we can infer some general patterns:
+
+**1. Instantiation:**
 
 ```python
-from autodocs.parsers.base_parser import BaseParser
-
-class PythonParser(BaseParser):
-    def __init__(self, config):
-        super().__init__(config)
-
-    def parse(self, file_path):
-        # Custom parsing logic for Python files
-        with open(file_path, 'r') as f:
-            code = f.read()
-        # ... (Implementation details to extract documentation)
-        return {"file_path": file_path, "docstrings": []} # Example return
+# Assuming a configuration object is available
+config = {"some_setting": "some_value"}  # Example, actual config may vary
+parser = BaseParser(config)
 ```
 
-In this example, `PythonParser` inherits from `BaseParser` and overrides the `parse` method to handle Python-specific parsing. The `extract_docstring` method from the base class could be used within the `parse` method to extract docstrings from the Python code.
+**2. Parsing a File:**
+
+```python
+file_path = "path/to/your/file.py"  # Replace with the actual file path
+parsed_data = parser.parse(file_path)
+
+# parsed_data now contains the extracted documentation
+# The structure of parsed_data depends on the specific parser implementation
+print(parsed_data)
+```
+
+**3. Extracting a Docstring (Conceptual - Requires Subclass Implementation):**
+
+```python
+# This is a conceptual example, as the base class doesn't implement
+# extract_docstring.  A subclass would provide the actual implementation.
+
+text_with_docstring = """
+def my_function():
+    \"\"\"This is the docstring.\"\"\"
+    pass
+"""
+docstring = parser.extract_docstring(text_with_docstring)
+print(docstring)  # Expected output (in a subclass): This is the docstring.
+```
+
+**Important Considerations:**
+
+*   The `BaseParser` class is likely an abstract base class.  You would typically not instantiate it directly.  Instead, you would create subclasses that implement the `extract_docstring` method (and potentially override `parse` and `__init__` as needed) to handle specific programming languages.
+*   The `config` parameter in `__init__` is not detailed.  Subclasses would likely define the expected structure and content of this configuration.
+*   The return value of `parse` is a dictionary, but its structure is undefined in the base class.  Subclasses would define the keys and values of this dictionary to represent the extracted documentation.
+* The return type of `extract_docstring` is not specified, but is likely a string.
+```

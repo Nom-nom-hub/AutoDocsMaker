@@ -1,104 +1,134 @@
 # python_parser
 
-## File Path
-
-./autodocs/parsers/python_parser.py
+**File Path:** `./autodocs/parsers/python_parser.py`
 
 ## Overview
 
-Parser for Python files
+This module provides a parser for Python files.  (Note:  The provided code snippet *doesn't* include a module-level docstring, so this overview is a general description based on the file name and class docstring.  A real module should have a docstring at the top of the file.)
 
 ## Quick Reference
 
+This module contains the following classes and functions:
+
 **Classes:**
 
-*   `PythonParser`: Parses Python files and extracts documentation.
+*   `PythonParser`: Parser for Python files
 
-**Methods:**
+**Methods (within `PythonParser`):**
 
-*   `PythonParser.parse(file_path)`: Parses a Python file and extracts documentation.
-*   `PythonParser._parse_class(node)`: Parses a class definition.
-*   `PythonParser._parse_function(node)`: Parses a function definition.
-*   `PythonParser._parse_import(node)`: Parses an import statement.
+*   `parse(file_path)`: Parse a Python file and extract documentation
+*   `_parse_class(node)`: Parse a class definition
+*   `_parse_function(node)`: Parse a function definition
+*   `_parse_import(node)`: Parse an import statement
 
 ## Detailed Documentation
 
-### `PythonParser` Class
+### Class: `PythonParser`
 
-**Description:**
+**Docstring:** Parser for Python files
 
-The `PythonParser` class is responsible for parsing Python files and extracting documentation information. It utilizes the `ast` module to traverse the Abstract Syntax Tree (AST) of the Python code.
+This class is responsible for parsing Python source code and extracting relevant information for documentation.
 
-**Methods:**
+#### Method: `parse(file_path)`
 
-#### `parse(file_path)`
+**Docstring:** Parse a Python file and extract documentation
 
-**Description:**
+**Args:**
 
-Parses a Python file and extracts documentation.
-
-**Arguments:**
-
-*   `file_path` (str): The path to the Python file to parse.
+*   `file_path` (str): Path to the Python file
 
 **Returns:**
 
-*   dict: A dictionary containing the parsed documentation data. The structure of this dictionary is not explicitly defined in the provided information, but it likely contains information about classes, functions, and import statements found in the file.
-
-#### `_parse_class(node)`
+*   `dict`: Dictionary with parsed documentation data.  The exact structure of this dictionary is not specified in the provided code, but it likely contains information about classes, functions, and imports found in the file.
 
 **Description:**
 
-Parses a class definition within the Python file's AST.  This method is intended for internal use by the `parse` method.
+This is the main entry point for parsing a Python file.  It takes the file path as input and returns a dictionary containing the extracted documentation.  It likely uses the other `_parse_*` methods internally to process different parts of the code.
 
-**Arguments:**
+#### Method: `_parse_class(node)`
 
-*   `node`:  An AST node representing a class definition.
+**Docstring:** Parse a class definition
+
+**Args:**
+
+*   `node`:  (Likely an `ast.ClassDef` object, although the type is not explicitly specified in the provided code. This would be the AST node representing the class definition.)
 
 **Returns:**
 
-*   The return value is not explicitly defined in the prompt. It likely returns a dictionary or other data structure containing information about the parsed class, such as its name, docstring, and potentially information about its methods and attributes.
-
-#### `_parse_function(node)`
+*   (Return type is not specified.  It likely returns a dictionary or other data structure containing information about the parsed class.)
 
 **Description:**
 
-Parses a function definition within the Python file's AST. This method is intended for internal use by the `parse` method.
+This method is responsible for parsing a class definition within the Python file.  It takes an AST node representing the class as input and extracts relevant information, such as the class name, docstring, and methods.
 
-**Arguments:**
+#### Method: `_parse_function(node)`
 
-*   `node`: An AST node representing a function definition.
+**Docstring:** Parse a function definition
+
+**Args:**
+
+*   `node`: (Likely an `ast.FunctionDef` or `ast.AsyncFunctionDef` object, although the type is not explicitly specified. This would be the AST node representing the function definition.)
 
 **Returns:**
 
-*   The return value is not explicitly defined in the prompt. It likely returns a dictionary or other data structure containing information about the parsed function, such as its name, docstring, and parameters.
-
-#### `_parse_import(node)`
+*   (Return type is not specified. It likely returns a dictionary or other data structure containing information about the parsed function.)
 
 **Description:**
 
-Parses an import statement within the Python file's AST. This method is intended for internal use by the `parse` method.
+This method handles the parsing of function definitions. It takes an AST node representing the function and extracts information like the function name, arguments, docstring, and return type (if available from type hints).
 
-**Arguments:**
+#### Method: `_parse_import(node)`
 
-*   `node`: An AST node representing an import statement.
+**Docstring:** Parse an import statement
+
+**Args:**
+
+*   `node`: (Likely an `ast.Import` or `ast.ImportFrom` object, although the type is not explicitly specified. This represents the AST node for the import statement.)
 
 **Returns:**
 
-*   The return value is not explicitly defined in the prompt. It likely returns a dictionary or other data structure containing information about the parsed import statement, such as the imported module or objects.
+*   (Return type is not specified. It likely returns a dictionary or other data structure containing information about the parsed import statement.)
+
+**Description:**
+
+This method parses import statements within the Python file.  It extracts information about the imported modules and names.
 
 ## Usage Examples
 
-The provided information does not include code examples. However, a typical usage pattern would involve creating an instance of `PythonParser` and calling the `parse` method with the path to a Python file:
+While the provided code doesn't include explicit usage examples, we can infer how it might be used:
 
 ```python
 from autodocs.parsers.python_parser import PythonParser
 
-file_path = "my_module.py"  # Replace with the actual path to your Python file
+# Create an instance of the parser
 parser = PythonParser()
+
+# Parse a Python file
+file_path = "path/to/your/python/file.py"
 parsed_data = parser.parse(file_path)
 
-# Process the parsed_data dictionary to extract the desired documentation information.
-# The structure of parsed_data will depend on the implementation details of the parser.
-print(parsed_data)
+# Access the parsed data
+# (The exact structure of parsed_data depends on the implementation)
+# print(parsed_data)
+
+# Example (hypothetical - assuming parsed_data structure)
+# if 'classes' in parsed_data:
+#     for class_name, class_data in parsed_data['classes'].items():
+#         print(f"Class: {class_name}")
+#         print(f"  Docstring: {class_data.get('docstring', 'No docstring')}")
+#         if 'methods' in class_data:
+#             for method_name, method_data in class_data['methods'].items():
+#                 print(f"  Method: {method_name}")
+#                 print(f"    Docstring: {method_data.get('docstring', 'No docstring')}")
+
+# if 'functions' in parsed_data:
+#   for function_name, function_data in parsed_data['functions'].items():
+#         print(f"Function: {function_name}")
+#         print(f"  Docstring: {function_data.get('docstring', 'No docstring')}")
+
+# if 'imports' in parsed_data:
+#    for import_data in parsed_data['imports']:
+#        print(f"Import: {import_data}") # Example assuming simple string representation
 ```
+
+This example demonstrates how to create an instance of `PythonParser`, use the `parse` method to process a file, and then (hypothetically) access the resulting data.  The comments highlight that the exact structure of `parsed_data` is not defined in the provided code snippet, so the access patterns are illustrative.

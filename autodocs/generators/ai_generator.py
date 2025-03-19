@@ -39,21 +39,41 @@ class AIGenerator:
                 Defaults to empty dict.
         """
         self.config = config or {}
-        self.api_key = self.config.get('openrouter_api_key', os.environ.get('OPENROUTER_API_KEY'))
+        
+        # Try to get API key from multiple sources with priority:
+        # 1. config['openrouter_api_key']
+        # 2. config['output']['ai']['api_key'] 
+        # 3. OPENROUTER_API_KEY environment variable
+        self.api_key = (
+            self.config.get('openrouter_api_key') or 
+            (self.config.get('output', {}).get('ai', {}).get('api_key')) or
+            os.environ.get('OPENROUTER_API_KEY')
+        )
+        
+        # Log API key status (not the actual key)
+        if self.api_key:
+            logger.info("OpenRouter API key found")
+        else:
+            logger.warning("No OpenRouter API key found in config or environment")
         
         # Get AI model from config, with fallback to environment variable
-        self.model = self.config.get('ai_model', 
-                                    os.environ.get('AUTODOCS_AI_MODEL', 
-                                    'google/gemini-2.0-flash-lite-preview-02-05:free'))
+        ai_config = self.config.get('output', {}).get('ai', {})
+        self.model = (
+            ai_config.get('model') or
+            self.config.get('ai_model') or
+            os.environ.get('AUTODOCS_AI_MODEL', 'anthropic/claude-3-haiku:free')
+        )
         
         # Allow custom API URL to support different AI providers
-        self.api_url = self.config.get('ai_api_url', 
-                                      os.environ.get('AUTODOCS_AI_API_URL', 
-                                      "https://openrouter.ai/api/v1/chat/completions"))
+        self.api_url = (
+            ai_config.get('api_url') or
+            self.config.get('ai_api_url') or
+            os.environ.get('AUTODOCS_AI_API_URL', "https://openrouter.ai/api/v1/chat/completions")
+        )
         
         # Add temperature and max tokens parameters
-        self.temperature = float(self.config.get('ai_temperature', 0.3))  # Lower temperature for more focused docs
-        self.max_tokens = int(self.config.get('ai_max_tokens', 4000))  # Reasonable limit for docs
+        self.temperature = float(ai_config.get('temperature', self.config.get('ai_temperature', 0.3)))
+        self.max_tokens = int(ai_config.get('max_tokens', self.config.get('ai_max_tokens', 4000)))
         
         # Add parallel processing option
         self.parallel = self.config.get('parallel_processing', False)
@@ -77,7 +97,6 @@ class AIGenerator:
             os.makedirs(output_path)
         
         # Check if API key is available
-        self.api_key = self.config.get('openrouter_api_key') or os.environ.get('OPENROUTER_API_KEY')
         if not self.api_key:
             logger.error("OpenRouter API key is required for AI documentation generation.")
             logger.error("Set it in config file or OPENROUTER_API_KEY environment variable.")
@@ -87,36 +106,27 @@ class AIGenerator:
         if 'project' not in self.config:
             self.config['project'] = {}
         
-        # Try to determine project root from input files
-        if parsed_data:
-            # Get the common prefix of all file paths
-            file_paths = list(parsed_data.keys())
-            common_prefix = os.path.commonpath(file_paths) if file_paths else os.getcwd()
-            self.config['project']['root_dir'] = common_prefix
-        else:
-            self.config['project']['root_dir'] = os.getcwd()
-        
-        logger.info(f"Using project root directory: {self.config['project']['root_dir']}")
-        
-        # Generate index file
-        logger.info("Generating index documentation using AI...")
-        self._generate_index(parsed_data, output_path)
-        
-        # Generate individual files
+        # Get file count for progress reporting
         file_count = len(parsed_data)
-        current = 0
+        logger.info(f"Generating AI documentation for {file_count} files")
         
-        # Use tqdm for progress bar if available
-        try:
-            from tqdm import tqdm
-            file_iterator = tqdm(parsed_data.items(), total=file_count, desc="Generating file documentation")
-        except ImportError:
+        # Create iterator with progress bar if available
+        if TQDM_AVAILABLE:
+            file_iterator = tqdm(parsed_data.items(), total=file_count, desc="Generating documentation")
+        else:
             file_iterator = parsed_data.items()
-            logger.info(f"Processing {file_count} files...")
+        
+        current = 0
+        processed_files = []
         
         for file_path, data in file_iterator:
             current += 1
             rel_path = os.path.relpath(file_path)
+            
+            # Skip files with parsing errors
+            if 'error' in data:
+                logger.warning(f"Skipping {rel_path} due to parsing error: {data['error']}")
+                continue
             
             # Create a more readable output filename
             output_file = os.path.join(
@@ -138,7 +148,24 @@ class AIGenerator:
             with open(output_file, 'w', encoding='utf-8') as f:
                 f.write(doc_content)
             
+            processed_files.append({
+                'name': data.get('module_name', os.path.basename(file_path)),
+                'path': rel_path.replace('/', '_').replace('\\', '_') + '.md',
+                'description': data.get('module_doc', '').split('\n')[0] if data.get('module_doc') else '',
+                'file_path': file_path
+            })
+            
             logger.info(f"Documentation saved to {output_file}")
+        
+        # Generate index file
+        logger.info("Generating index file...")
+        index_content = self._generate_index(processed_files, output_path)
+        
+        # Generate README.md file
+        logger.info("Generating README.md file...")
+        readme_content = self._generate_readme(processed_files)
+        
+        return index_content
 
     def _generate_docs_sequential(self, valid_files, output_path):
         """Generate documentation sequentially for each file"""
@@ -245,43 +272,25 @@ class AIGenerator:
         
         return output_file
 
-    def _generate_index(self, parsed_data, output_path):
+    def _generate_index(self, processed_files, output_path):
         """Generate index file with links to all documentation"""
-        # Collect information about all files
+        # processed_files is a list, not a dictionary
         files_info = []
-        for file_path, data in parsed_data.items():
-            if 'error' in data:
-                continue
-                
-            rel_path = os.path.relpath(file_path)
-            doc_path = rel_path.replace('/', '_').replace('\\', '_') + '.md'
-            
-            files_info.append({
-                'name': data.get('module_name', os.path.basename(file_path)),
-                'path': doc_path,
-                'description': data.get('module_doc', '').split('\n')[0] if data.get('module_doc') else '',
-                'file_path': file_path
-            })
+        
+        # Extract relevant information from processed_files
+        for file_info in processed_files:
+            if isinstance(file_info, dict) and 'file_path' in file_info:
+                files_info.append(file_info)
         
         # Generate index using AI
         prompt = self._create_index_prompt(files_info, self.config.get('project', {}))
         index_content = self._call_ai_api(prompt)
         
+        # Write index file
         with open(os.path.join(output_path, 'index.md'), 'w', encoding='utf-8') as f:
             f.write(index_content)
         
         logger.info(f"Index documentation saved to {os.path.join(output_path, 'index.md')}")
-        
-        # Generate README.md file
-        readme_prompt = self._create_readme_prompt(files_info, self.config.get('project', {}))
-        readme_content = self._call_ai_api(readme_prompt)
-        
-        # Save README.md to project root
-        project_root = self.config.get('project', {}).get('root_dir', os.getcwd())
-        with open(os.path.join(project_root, 'README.md'), 'w', encoding='utf-8') as f:
-            f.write(readme_content)
-        
-        logger.info(f"README.md saved to {os.path.join(project_root, 'README.md')}")
         
         return index_content
     
@@ -307,77 +316,66 @@ class AIGenerator:
     
     def _call_ai_api(self, prompt):
         """Call the OpenRouter API with the given prompt"""
-        if not self.api_key:
-            raise ValueError("OpenRouter API key is required. Set it in config or OPENROUTER_API_KEY environment variable.")
+        # Rate limiting
+        current_time = time.time()
+        time_since_last = current_time - self.last_request_time
+        if time_since_last < self.rate_limit:
+            time.sleep(self.rate_limit - time_since_last)
+        self.last_request_time = time.time()
         
-        logger.debug(f"Calling AI API with model: {self.model}")
+        api_key = self.api_key
+        if not api_key:
+            logger.error("No OpenRouter API key provided.")
+            return "ERROR: No OpenRouter API key provided."
         
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-            "HTTP-Referer": self.config.get('site_url', 'https://autodocs.dev'),  # For attribution
-            "X-Title": self.config.get('project', {}).get('name', 'AutoDocs')     # For attribution
-        }
-        
-        # Create system prompt with more detailed instructions
-        system_prompt = """You are a documentation expert specializing in software documentation.
-Generate clear, concise, and helpful documentation for code.
-Focus on explaining the purpose, usage patterns, and important details.
-Use proper Markdown formatting with headers, code blocks, and lists.
-Be thorough but avoid unnecessary verbosity.
-Include usage examples where possible.
-IMPORTANT: Do not wrap the entire response in triple backticks (```). Only use backticks for code blocks within the document."""
-
-        payload = {
-            "model": self.model,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt}
-            ],
-            "temperature": self.temperature,
-            "max_tokens": self.max_tokens
-        }
-        
-        # Add retry logic for API calls
-        max_retries = 3
-        retry_delay = 2  # seconds
-        
-        for attempt in range(max_retries):
-            try:
-                logger.debug("Sending request to OpenRouter API...")
-                response = requests.post(self.api_url, headers=headers, json=payload, timeout=60)
-                response.raise_for_status()
-                result = response.json()
-                logger.debug("Received response from OpenRouter API")
-                content = result['choices'][0]['message']['content']
-                
-                # Strip any wrapping triple backticks if present
-                if content.startswith("```markdown") and content.endswith("```"):
-                    content = content[len("```markdown"):].rstrip("```").strip()
-                elif content.startswith("```") and content.endswith("```"):
-                    content = content[3:].rstrip("```").strip()
-                    
-                return content
-            except requests.exceptions.Timeout:
-                logger.warning(f"API request timed out (attempt {attempt+1}/{max_retries})")
-                if attempt < max_retries - 1:
-                    logger.info(f"Retrying in {retry_delay} seconds...")
-                    time.sleep(retry_delay)
-                    retry_delay *= 2  # Exponential backoff
-                else:
-                    logger.error("All retry attempts failed")
-                    return "# Error Generating Documentation\n\nThe API request timed out after multiple attempts. Please try again later."
-            except requests.exceptions.HTTPError as e:
-                logger.error(f"HTTP error: {e.response.status_code} - {e.response.text}")
-                if e.response.status_code >= 500 and attempt < max_retries - 1:  # Server error, retry
-                    logger.info(f"Retrying in {retry_delay} seconds...")
-                    time.sleep(retry_delay)
-                    retry_delay *= 2  # Exponential backoff
-                else:
-                    return f"# Error Generating Documentation\n\nHTTP error: {e.response.status_code}\n\n```\n{e.response.text}\n```"
-            except Exception as e:
-                logger.error(f"Error calling AI API: {str(e)}")
-                return f"# Error Generating Documentation\n\nAn error occurred while generating documentation: {str(e)}"
+        try:
+            logger.debug(f"Making API request to {self.api_url} with model {self.model}")
+            
+            # Ensure API key has proper format with Bearer prefix
+            auth_header = api_key if api_key.startswith("Bearer ") else f"Bearer {api_key}"
+            
+            headers = {
+                "Authorization": auth_header,
+                "Content-Type": "application/json",
+                "HTTP-Referer": "https://github.com/Nom-nom-hub/autodocs",
+                "X-Title": "AutoDocs Generator"
+            }
+            
+            payload = {
+                "model": self.model,
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": self.temperature,
+                "max_tokens": self.max_tokens
+            }
+            
+            logger.debug(f"Request headers: {headers}")
+            logger.debug(f"Request payload: {payload}")
+            
+            response = requests.post(
+                self.api_url,
+                headers=headers,
+                json=payload,
+                timeout=60
+            )
+            
+            # Log detailed error information
+            if response.status_code != 200:
+                logger.error(f"API request failed with status code {response.status_code}")
+                logger.error(f"Response content: {response.text}")
+                return f"ERROR: API request failed with status code {response.status_code}. Details: {response.text}"
+            
+            response.raise_for_status()  # Raise exception for HTTP errors
+            result = response.json()
+            return result['choices'][0]['message']['content']
+        except requests.exceptions.RequestException as e:
+            logger.error(f"API request failed: {str(e)}")
+            return f"ERROR: API request failed - {str(e)}"
+        except (KeyError, IndexError) as e:
+            logger.error(f"Failed to parse API response: {str(e)}")
+            return "ERROR: Failed to parse API response"
+        except Exception as e:
+            logger.error(f"Unexpected error in API call: {str(e)}")
+            return f"ERROR: Unexpected error - {str(e)}"
 
     def _create_file_doc_prompt(self, data):
         """Create a prompt for generating file documentation"""
@@ -498,8 +496,11 @@ IMPORTANT: Do not wrap the entire response in triple backticks (```). Only use b
         
         return prompt
 
-    def _create_readme_prompt(self, files_info, project_info):
-        """Create a prompt for generating README documentation"""
+    def _generate_readme(self, files_info):
+        """Generate README.md file for the project"""
+        project_info = self.config.get('project', {})
+        
+        # Create prompt for README generation
         prompt = "Generate a comprehensive README.md file for a software project with the following details:\n\n"
         
         # Add project info
@@ -510,9 +511,7 @@ IMPORTANT: Do not wrap the entire response in triple backticks (```). Only use b
         # Add files info
         prompt += "The project contains the following key files:\n\n"
         for file_info in files_info[:10]:  # Limit to first 10 files to avoid overwhelming
-            prompt += f"- {file_info['file_path']}\n"
-            if file_info.get('description'):
-                prompt += f"  Brief description: {file_info['description']}\n"
+            prompt += f"- {file_info['file_path']}: {file_info.get('description', '')}\n"
         
         # Add specific instructions
         prompt += "\nPlease create a README.md file with the following sections:\n"
@@ -526,4 +525,16 @@ IMPORTANT: Do not wrap the entire response in triple backticks (```). Only use b
         
         prompt += "Make the README concise, informative, and well-formatted with proper markdown syntax. Include code blocks for installation and usage examples."
         
-        return prompt
+        # Generate README content
+        readme_content = self._call_ai_api(prompt)
+        
+        # Save README.md to project root
+        project_root = self.config.get('project', {}).get('root_dir', os.getcwd())
+        readme_path = os.path.join(project_root, 'README.md')
+        
+        with open(readme_path, 'w', encoding='utf-8') as f:
+            f.write(readme_content)
+        
+        logger.info(f"README.md saved to {readme_path}")
+        
+        return readme_content
