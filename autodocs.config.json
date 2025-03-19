@@ -1,0 +1,32 @@
+{
+  "exclude": [
+    "venv/",
+    "node_modules/",
+    "test/",
+    "__pycache__/"
+  ],
+  "include_private": false,
+  "project": {
+    "name": "AutoDocs",
+    "description": "AutoDocs is an automatic documentation generator that extracts documentation from code comments and structure. It supports multiple programming languages and output formats.",
+    "usage": "Run `autodocs --input ./src --output ./docs --format markdown` to generate documentation for your project."
+  },
+  "output": {
+    "markdown": {
+      "toc": true,
+      "code_highlighting": true
+    },
+    "html": {
+      "theme": "default",
+      "syntax_highlighting": true
+    },
+    "pdf": {
+      "page_size": "A4",
+      "font_size": 11
+    },
+    "ai": {
+      "model": "google/gemini-2.0-flash-lite-preview-02-05:free"
+    }
+  },
+  "openrouter_api_key": "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"
+}

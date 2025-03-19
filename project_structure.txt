@@ -1,0 +1,16 @@
+autodocs/
+├── __init__.py
+├── cli.py
+├── parsers/
+│   ├── __init__.py
+│   ├── base_parser.py
+│   ├── python_parser.py
+│   ├── javascript_parser.py
+│   └── ...
+├── generators/
+│   ├── __init__.py
+│   ├── markdown_generator.py
+│   ├── html_generator.py
+│   └── pdf_generator.py
+├── config.py
+└── utils.py

@@ -1,0 +1,2 @@
+[console_scripts]
+autodocs = autodocs.cli:main

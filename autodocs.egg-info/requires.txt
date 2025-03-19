@@ -1,0 +1,8 @@
+pygments
+markdown2
+requests
+
+[dev]
+setuptools
+wheel
+pylance
