@@ -30,5 +30,5 @@
       "model": "anthropic/claude-3-haiku:free"
     }
   },
-  "openrouter_api_key": "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"
+  "openrouter_api_key": "your-api-key-from-openrouter"
 }
